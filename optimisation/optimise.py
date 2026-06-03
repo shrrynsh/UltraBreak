@@ -73,13 +73,13 @@ def total_variation(img):
 def main():
     device = "cuda" if torch.cuda.is_available() else ("mps" if torch.backends.mps.is_available() else "cpu")
 
-    train_config = "./train_configs/test.csv"
+    train_config = "./train_configs/safebench-tiny_jailbroken_mode.csv"
     qwen_adapter = Qwen2Adapter("Qwen/Qwen2-VL-7B-Instruct", patch_only=False)
 
     # optionally optimise against multiple surrogates; final method only uses one
     ensemble = [qwen_adapter]#, clip_adapter] #, llava_adapter]
     
-    exp_name =  'test'
+    exp_name =  'safebench-tiny_jailbroken_mode_5000'
     base_epoch = 0
     
     os.makedirs(f"outputs/{exp_name}/", exist_ok=True)

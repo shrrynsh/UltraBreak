@@ -13,4 +13,4 @@ source $(conda info --base)/etc/profile.d/conda.sh
 conda activate ultrabreak
 
 # Run your python script
-python evaluation/attack.py --model_name "Qwen/Qwen2-VL-7B-Instruct" --attack_config "safebench_jailbroken_mode_1300"
+python evaluation/attack.py --model_name "Qwen/Qwen2-VL-7B-Instruct" --attack_config "advbench_jailbroken_mode_ultrabreak"

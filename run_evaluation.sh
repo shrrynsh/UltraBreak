@@ -13,4 +13,4 @@ source $(conda info --base)/etc/profile.d/conda.sh
 conda activate ultrabreak
 
 # Run your python script
-python evaluation/evaluate.py --attack_result results/advbench_jailbroken_mode_ultrabreak/Qwen/Qwen2-VL-7B-Instruct.csv
+python evaluation/evaluate.py --attack_result results/safebench_jailbroken_mode_1300/Qwen/Qwen-VL-Chat.csv

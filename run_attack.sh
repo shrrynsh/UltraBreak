@@ -13,4 +13,4 @@ source $(conda info --base)/etc/profile.d/conda.sh
 conda activate ultrabreak
 
 # Run your python script
-python evaluation/attack.py --model_name "THUDM/GLM-4.1V-9B-Thinking" --attack_config "safebench_jailbroken_mode_5000"
+python evaluation/attack.py --model_name "THUDM/GLM-4.1V-9B-Thinking" --attack_config "safebench_jailbroken_mode_1300"

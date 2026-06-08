@@ -13,4 +13,4 @@ source $(conda info --base)/etc/profile.d/conda.sh
 conda activate ultrabreak
 
 # Run your python script
-python evaluation/evaluate.py --attack_result results/safebench_jailbroken_mode_1300/llava-hf/llava-v1.6-mistral-7b-hf.csv
+python evaluation/evaluate.py --attack_result results/safebench_jailbroken_mode_5000/THUDM/GLM-4.1V-9B-Thinking.csv

@@ -266,6 +266,130 @@ def main(args):
         query_df.to_csv(f"{save_path}/{attack_config}/{model_name}.csv")
 
 
+    elif model_name == "moonshotai/Kimi-VL-A3B-Instruct":
+        from transformers import AutoModelForCausalLM, AutoProcessor, AutoConfig
+
+        # Compatibility shim: Kimi-VL's custom modeling code (written for
+        # transformers ~4.48) imports `is_torch_fx_available`, which was removed
+        # from transformers.utils.import_utils in transformers 5.x. Re-inject it
+        # before the remote code is loaded. torch.fx is available on any modern
+        # torch, so this returns True.
+        import transformers.utils.import_utils as _tf_import_utils
+        if not hasattr(_tf_import_utils, "is_torch_fx_available"):
+            def _is_torch_fx_available():
+                try:
+                    import torch.fx  # noqa: F401
+                    return True
+                except Exception:
+                    return False
+            _tf_import_utils.is_torch_fx_available = _is_torch_fx_available
+
+        # Compatibility shim: transformers 5.x removed DynamicCache.seen_tokens
+        # (use get_seq_length() instead), but Kimi-VL's generation code still
+        # reads past_key_values.seen_tokens. Re-add it as a property.
+        from transformers.cache_utils import DynamicCache
+        if not hasattr(DynamicCache, "seen_tokens"):
+            DynamicCache.seen_tokens = property(lambda self: self.get_seq_length())
+
+        # Compatibility fix: newer configs store rope settings as
+        # {'rope_theta': ..., 'rope_type': 'default'}, but Kimi-VL's custom
+        # modeling code expects the legacy {'type': ..., 'factor': ...} schema
+        # and accesses rope_scaling["type"]/["factor"] whenever rope_scaling is
+        # not None. 'default' means no scaling, so set it to None to take the
+        # correct no-scaling code path.
+        config = AutoConfig.from_pretrained(
+            "moonshotai/Kimi-VL-A3B-Instruct", trust_remote_code=True
+        )
+        text_config = getattr(config, "text_config", None)
+        if text_config is not None:
+            rope_scaling = getattr(text_config, "rope_scaling", None)
+            if isinstance(rope_scaling, dict) and "type" not in rope_scaling:
+                if rope_scaling.get("rope_type", "default") == "default":
+                    text_config.rope_scaling = None
+                else:
+                    # Map new-style key to the legacy key the custom code reads.
+                    rope_scaling["type"] = rope_scaling["rope_type"]
+
+        # Compatibility fix: transformers 5.x's init_weights() calls
+        # tie_weights(recompute_mapping=False), but Kimi-VL's custom
+        # tie_weights() override doesn't accept extra kwargs. Resolve the
+        # dynamic model class first and wrap tie_weights to ignore them.
+        from transformers.dynamic_module_utils import get_class_from_dynamic_module
+        class_ref = config.auto_map["AutoModelForCausalLM"]
+        model_cls = get_class_from_dynamic_module(
+            class_ref, "moonshotai/Kimi-VL-A3B-Instruct"
+        )
+        _orig_tie_weights = model_cls.tie_weights
+        def _tie_weights(self, *args, **kwargs):  # noqa: ANN001
+            return _orig_tie_weights(self)
+        model_cls.tie_weights = _tie_weights
+
+        model = model_cls.from_pretrained(
+            "moonshotai/Kimi-VL-A3B-Instruct",
+            config=config,
+            torch_dtype="auto",
+            device_map="auto",
+            trust_remote_code=True,
+        )
+        processor = AutoProcessor.from_pretrained(
+            "moonshotai/Kimi-VL-A3B-Instruct", trust_remote_code=True
+        )
+
+        for index, (image_path, prompt) in enumerate(zip(batch_image_path, batch_query_text)):
+            print(image_path)
+            if image_path:
+                image = Image.open(image_path)
+                messages = [
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "image", "image": image_path},
+                            {"type": "text", "text": prompt},
+                        ],
+                    }
+                ]
+            else:
+                image = None
+                messages = [
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "text", "text": prompt},
+                        ],
+                    }
+                ]
+
+            text = processor.apply_chat_template(
+                messages, add_generation_prompt=True, return_tensors="pt"
+            )
+            inputs = processor(
+                images=image,
+                text=text,
+                return_tensors="pt",
+                padding=True,
+                truncation=True,
+            ).to(model.device)
+
+            generated_ids = model.generate(**inputs, max_new_tokens=512)
+            generated_ids_trimmed = [
+                out_ids[len(in_ids):]
+                for in_ids, out_ids in zip(inputs.input_ids, generated_ids)
+            ]
+            response = processor.batch_decode(
+                generated_ids_trimmed,
+                skip_special_tokens=True,
+                clean_up_tokenization_spaces=False,
+            )[0]
+
+            print(f"\n===== [{index + 1}/{len(batch_image_path)}] =====", flush=True)
+            print(f"PROMPT: {prompt}", flush=True)
+            print(f"RESPONSE: {response}\n", flush=True)
+            batch_response[index] = response
+            query_df["response"] = batch_response
+
+        query_df.to_csv(f"{save_path}/{attack_config}/{model_name}.csv")
+
+
    
     
 

@@ -50,6 +50,7 @@ class HarmBenchJudge(JudgeModel):
                 **encoded.to(self.device),
                 do_sample=False,
                 max_new_tokens=1,
+                max_length=None,
                 temperature=None,
                 top_p=None
             ).cpu()

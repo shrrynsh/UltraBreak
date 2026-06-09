@@ -13,4 +13,17 @@ source $(conda info --base)/etc/profile.d/conda.sh
 conda activate ultrabreak
 
 # Run your python script
-python evaluation/attack.py --model_name "THUDM/GLM-4.1V-9B-Thinking" --attack_config "safebench_jailbroken_mode_1300"
+echo "----- Running GLM-4.1V-9B-Thinking -----"
+python evaluation/attack.py --model_name "THUDM/GLM-4.1V-9B-Thinking" --attack_config "safebench_jailbroken_mode"
+
+echo "----- Running llava-v1.6-mistral-7b-hf -----"
+python evaluation/attack.py --model_name "llava-hf/llava-v1.6-mistral-7b-hf" --attack_config "safebench_jailbroken_mode"
+
+echo "----- Running Qwen-VL-Chat -----"
+python evaluation/attack.py --model_name "Qwen/Qwen-VL-Chat" --attack_config "safebench_jailbroken_mode"
+
+echo "----- Running Qwen2-VL-7B-Instruct -----"
+python evaluation/attack.py --model_name "Qwen/Qwen2-VL-7B-Instruct" --attack_config "safebench_jailbroken_mode"
+
+echo "----- Running Qwen2.5-VL-7B-Instruct -----"
+python evaluation/attack.py --model_name "Qwen/Qwen2.5-VL-7B-Instruct" --attack_config "safebench_jailbroken_mode"

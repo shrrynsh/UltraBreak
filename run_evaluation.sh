@@ -1,16 +1,32 @@
 #!/bin/bash
-#SBATCH --job-name=adv_patch_opt
-#SBATCH --gres=gpu:1           # Request 1 GPU [cite: 15, 30]
-#SBATCH --cpus-per-task=10     # Request 10 CPU threads [cite: 31]
-#SBATCH --mem=40G              # Request 40GB RAM [cite: 32]
-#SBATCH --time=24:00:00        # Time limit [cite: 29]
-#SBATCH --output=logs/job_%j.out
-#SBATCH --error=logs/job_%j.err
 
 # Activate your environment if necessary
-cd ~/sm/UltraBreak
-source $(conda info --base)/etc/profile.d/conda.sh
-conda activate ultrabreak
+cd ~/UltraBreak
+
+# Log file with timestamp
+LOG_FILE="logs/run_evaluation_$(date +%Y%m%d_%H%M%S).log"
+mkdir -p logs
+
+# Redirect all stdout and stderr to both terminal and log file
+exec > >(tee -a "$LOG_FILE") 2>&1
+
+echo "===== Evaluation run started at $(date) ====="
+echo "Logging to: $LOG_FILE"
+echo ""
 
 # Run your python script
-python evaluation/evaluate.py --attack_result results/safebench_jailbroken_mode_1300/Qwen/Qwen2.5-VL-7B-Instruct.csv
+echo "----- Evaluating Qwen2.5-VL-7B-Instruct -----"
+python evaluation/evaluate.py --attack_result results/advbench_jailbroken_mode_1300/Qwen/Qwen2.5-VL-7B-Instruct.csv
+
+echo "----- Evaluating Qwen2-VL-7B-Instruct -----"
+python evaluation/evaluate.py --attack_result results/advbench_jailbroken_mode_1300/Qwen/Qwen2-VL-7B-Instruct.csv
+
+echo "----- Evaluating llava-v1.6-mistral-7b-hf -----"
+python evaluation/evaluate.py --attack_result results/advbench_jailbroken_mode_1300/llava-hf/llava-v1.6-mistral-7b-hf.csv
+
+echo "----- Evaluating GLM-4.1V-9B-Thinking -----"
+python evaluation/evaluate.py --attack_result results/advbench_jailbroken_mode_1300/THUDM/GLM-4.1V-9B-Thinking.csv
+
+
+echo ""
+echo "===== Evaluation run finished at $(date) ====="

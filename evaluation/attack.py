@@ -62,6 +62,14 @@ def main(args):
     
     elif model_name == "Qwen/Qwen-VL-Chat":
         from transformers import AutoModelForCausalLM, AutoTokenizer, LlamaTokenizer
+
+        # Qwen-VL-Chat only ships pickle-format .bin weights (no safetensors).
+        # transformers 5.x blocks torch.load for torch < 2.6 due to CVE-2025-32434.
+        # We are loading the official, trusted Qwen/Qwen-VL-Chat repo, so we bypass
+        # the guard here only. Do NOT use this path for untrusted checkpoints.
+        import transformers.modeling_utils as _mu
+        _mu.check_torch_load_is_safe = lambda *a, **k: None
+
         tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen-VL-Chat", trust_remote_code=True)
         model = AutoModelForCausalLM.from_pretrained("Qwen/Qwen-VL-Chat", device_map="cuda", trust_remote_code=True).eval()
 

@@ -16,16 +16,16 @@ echo ""
 
 # Run your python script
 echo "----- Evaluating Qwen2.5-VL-7B-Instruct -----"
-python evaluation/evaluate.py --attack_result results/advbench_jailbroken_mode_1300/Qwen/Qwen2.5-VL-7B-Instruct.csv
+python evaluation/evaluate.py --attack_result results/safebench_jailbroken_mode/Qwen/Qwen2.5-VL-7B-Instruct.csv
 
 echo "----- Evaluating Qwen2-VL-7B-Instruct -----"
-python evaluation/evaluate.py --attack_result results/advbench_jailbroken_mode_1300/Qwen/Qwen2-VL-7B-Instruct.csv
+python evaluation/evaluate.py --attack_result results/safebench_jailbroken_mode/Qwen/Qwen2-VL-7B-Instruct.csv
 
 echo "----- Evaluating llava-v1.6-mistral-7b-hf -----"
-python evaluation/evaluate.py --attack_result results/advbench_jailbroken_mode_1300/llava-hf/llava-v1.6-mistral-7b-hf.csv
+python evaluation/evaluate.py --attack_result results/safebench_jailbroken_mode/llava-hf/llava-v1.6-mistral-7b-hf.csv
 
 echo "----- Evaluating GLM-4.1V-9B-Thinking -----"
-python evaluation/evaluate.py --attack_result results/advbench_jailbroken_mode_1300/THUDM/GLM-4.1V-9B-Thinking.csv
+python evaluation/evaluate.py --attack_result results/safebench_jailbroken_mode/THUDM/GLM-4.1V-9B-Thinking.csv
 
 
 echo ""
